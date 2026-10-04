@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>深空编队 · 离线会签核验台（RFC 9591）</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <div>
+        <h1>离线机动指令会签核验台</h1>
+        <p class="sub">RFC 9591 FROST · Ed25519 / SHA-512 · 阈值门限 · 证据冻结</p>
+      </div>
+    </div>
+    <div class="health" id="health">健康检查中…</div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>会签包提交</h2>
+      <div class="grid">
+        <label>稳定审计标识 audit_id
+          <input id="audit_id" value="AUDIT-2026-1004-BRAVO7-001" spellcheck="false" />
+        </label>
+        <label>阈值 threshold
+          <input id="threshold" type="number" min="1" max="65535" value="3" />
+        </label>
+        <label class="span2">群公钥 group_public_key（32B 十六进制）
+          <input id="group_pk" class="mono" spellcheck="false" placeholder="64 位十六进制起步…" />
+        </label>
+        <label class="span2">原始消息 message（明文，将按 UTF-8 作为待签消息）
+          <textarea id="message" rows="2"></textarea>
+        </label>
+      </div>
+
+      <div class="participants-head">
+        <h3>参与者（至多 8 名，验证时按标识小端整数升序排列）</h3>
+        <div class="btnrow">
+          <button type="button" id="add_btn">＋ 添加参与者</button>
+          <button type="button" id="sample_btn" class="ghost">载入真实样例会签包</button>
+          <button type="button" id="clear_btn" class="ghost">清空</button>
+        </div>
+      </div>
+      <div id="participants"></div>
+
+      <h3>聚合签名 aggregate_signature</h3>
+      <div class="grid">
+        <label>聚合承诺 R（完整承诺集派生）
+          <input id="agg_commitment" class="mono" spellcheck="false" />
+        </label>
+        <label>聚合响应 z
+          <input id="agg_response" class="mono" spellcheck="false" />
+        </label>
+      </div>
+
+      <div class="submit-row">
+        <button type="button" id="submit_btn" class="primary">提交核验并冻结证据</button>
+        <span class="hint">相同 audit_id + 完全相同载荷 → 返回既有冻结结论；任何字段变化 → 409 冲突且不覆盖原始证据。</span>
+      </div>
+    </section>
+
+    <section class="panel" id="result_panel" hidden>
+      <h2>核验结论</h2>
+      <div id="verdict"></div>
+      <div id="meta"></div>
+      <h3>稳定参与者顺序与逐份额结论</h3>
+      <div class="table-wrap">
+        <table id="shares_table">
+          <thead>
+            <tr>
+              <th>#</th><th>参与者标识</th><th>份额结论</th>
+              <th>绑定因子 ρ<sub>i</sub></th>
+              <th>拉格朗日 λ<sub>i</sub></th>
+              <th>方程残差 L<sub>i</sub>−R<sub>i</sub></th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <h3>聚合证据</h3>
+      <div id="aggregate"></div>
+      <details>
+        <summary>原始 JSON 结论（含 LHS / RHS 点编码）</summary>
+        <pre id="raw_json" class="mono"></pre>
+      </details>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

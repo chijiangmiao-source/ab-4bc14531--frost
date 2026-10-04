@@ -1,0 +1,23 @@
+services:
+  frost-desk:
+    build: .
+    image: frost-countersign-desk:1.0.0
+    container_name: frost-countersign-desk
+    # 宿主端口可配置：DESK_HOST_PORT=9090 docker compose up
+    ports:
+      - "${DESK_HOST_PORT:-8080}:8080"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8080"
+      EVIDENCE_DB: /data/evidence.json
+    volumes:
+      - frost-evidence:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request;assert json.load(urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=2))['status']=='ok'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  frost-evidence:
