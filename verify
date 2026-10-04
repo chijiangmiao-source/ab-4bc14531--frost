@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Convenience entry point: the one-shot acceptance service.
+exec "$(dirname "$0")/scripts/verify" "$@"

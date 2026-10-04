@@ -13,3 +13,7 @@ __pycache__/
 .yarn-cache/
 *.pyc
 *.pyo
+
+# Frozen evidence store
+data/
+*.json.tmp

@@ -1,0 +1,27 @@
+services:
+  frost-verify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: frost-verifier:local
+    container_name: frost-verify-console
+    environment:
+      # Bind inside the container; the host port is configurable below.
+      HOST: 0.0.0.0
+      PORT: "8080"
+      EVIDENCE_STORE_PATH: /srv/data/evidence.json
+    ports:
+      # Host port is configurable: HOST_PORT=9090 docker compose up
+      - "${HOST_PORT:-8080}:8080"
+    volumes:
+      - evidence-data:/srv/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; sys.exit(0 if json.load(urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=3))['status']=='ok' else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    restart: unless-stopped
+
+volumes:
+  evidence-data:

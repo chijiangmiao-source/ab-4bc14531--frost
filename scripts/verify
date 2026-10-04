@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+# One-shot acceptance service entry point.
+#
+# Runs the cryptographic rule tests, API/HTTP smoke tests, page checks
+# and image/build checks, then exits with a status code reporting the
+# combined result:
+#
+#   0 = all business acceptance, build checks and code tests passed
+#   1 = one or more failures
+#
+# The acceptance runner supports a host/port-style run against an
+# already-running instance by passing "http-smoke only" mode is not
+# needed; it boots its own real HTTP server in-process.
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ROOT=$(dirname "$SCRIPT_DIR")
+
+cd "$ROOT"
+exec python3 scripts/acceptance.py "$@"

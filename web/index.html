@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>深空编队 · 离线会签机动指令核验台</title>
+<link rel="stylesheet" href="/static/console.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🛰</span>
+    <div>
+      <h1>离线会签机动指令核验台</h1>
+      <p class="sub">RFC 9591 · FROST(Ed25519, SHA-512) · 双随机承诺 · 阈值会签</p>
+    </div>
+  </div>
+  <div class="suite">
+    <div>contextString</div>
+    <code>FROST-ED25519-SHA512-v1</code>
+    <div id="health" class="health"><span class="dot"></span>探测中…</div>
+  </div>
+</header>
+
+<main>
+<section class="panel">
+  <div class="panel-head">
+    <h2>会签包录入</h2>
+    <div class="actions">
+      <button type="button" id="loadValid" class="btn">载入有效示例</button>
+      <button type="button" id="loadBad" class="btn btn-warn">载入篡改份额示例</button>
+      <button type="button" id="addRow" class="btn btn-ghost">＋ 参与者行（至多 8）</button>
+    </div>
+  </div>
+  <form id="packetForm">
+    <div class="grid">
+      <label>稳定审计标识
+        <input name="audit_id" value="AUDIT-DEMO-0001" required
+               pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,127}"
+               title="1-128 字符，字母数字与 _ . -">
+      </label>
+      <label>阈值 t
+        <input name="threshold" type="number" min="1" max="8" value="2">
+      </label>
+      <label class="span2">群公钥 PK（32 字节 hex）
+        <input name="group_public_key" class="hex" spellcheck="false" required>
+      </label>
+      <label class="span2">原始消息（机动指令原文）
+        <input name="message" required placeholder="例如 MANEUVER-ORDER: delta-7 go">
+      </label>
+    </div>
+
+    <h3 class="rows-title">参与者（标识 · 公钥份额 · 双随机承诺 · 签名份额，均为 32 字节 hex）</h3>
+    <div class="head">
+      <span></span>
+      <span class="fields">
+        <span>标识 id</span><span>公钥份额 PK_i</span>
+        <span>隐藏承诺 H_i</span><span>绑定承诺 E_i</span><span>签名份额 z_i</span>
+      </span>
+      <span></span>
+    </div>
+    <div id="rows"></div>
+
+    <div class="grid">
+      <label>聚合签名 R（完整承诺集重算）
+        <input name="R" class="hex" spellcheck="false" required>
+      </label>
+      <label>聚合签名 z
+        <input name="z" class="hex" spellcheck="false" required>
+      </label>
+    </div>
+
+    <div class="submit-bar">
+      <button type="submit" class="btn btn-primary">提交核验并冻结证据</button>
+      <span id="formHint" class="hint">先逐份验证签名份额，再以余因子方程核对聚合签名。</span>
+    </div>
+  </form>
+</section>
+
+<section class="panel" id="resultPanel" hidden>
+  <div class="panel-head">
+    <h2>核验结论</h2>
+    <span id="verdictBadge" class="badge"></span>
+  </div>
+  <div id="frozenBanner" class="banner"></div>
+  <div id="reasons"></div>
+
+  <h3>稳定参与者顺序与逐份结论（按标识升序）</h3>
+  <div class="table-wrap">
+    <table id="sharesTable">
+      <thead><tr>
+        <th>顺序</th><th>参与者标识</th><th>份额结论</th>
+        <th>绑定因子 ρ_i</th><th>拉格朗日 λ_i</th>
+        <th>方程残差摘要</th><th>说明</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h3>聚合证据</h3>
+  <div id="aggBox" class="agg"></div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>已冻结审计证据</h2>
+    <button type="button" id="refreshEvidence" class="btn btn-ghost">刷新</button>
+  </div>
+  <div class="table-wrap">
+    <table id="evidenceTable">
+      <thead><tr><th>审计标识</th><th>冻结时间 (UTC)</th><th>结论</th>
+      <th>包摘要 SHA-256</th><th>冲突次数</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+</main>
+
+<footer>
+  RFC 9591 FROST(Ed25519, SHA-512) · 聚合核对方程 [8]zB = [8]R + [8]cPK ·
+  绑定因子 H(context‖"rho"‖PK‖H4(msg)‖H5(承诺集)‖id)
+</footer>
+<script src="/static/console.js"></script>
+</body>
+</html>
